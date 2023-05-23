@@ -6,6 +6,7 @@ from rest_framework_simplejwt.views import TokenVerifyView
 
 urlpatterns = [
     path("sign/", views.UserSignView.as_view(), name="sign"),
+    path("sign/<int:user_id>/", views.UserSignView.as_view(), name="sign"),
     path("token/", TokenObtainPairView.as_view(), name="token"),
     path("refresh/", TokenRefreshView.as_view(), name="refresh"),
     # refresh token으로 post요청. 토큰 확인. 유효할시 200. {"access":"<토큰문자열>"}
