@@ -19,6 +19,11 @@ class UserSignView(APIView):
         """회원가입
 
         post요청과 username, email, password, password2를 입력받습니다.
+        입력 값을 검사하여, 정상 시 유저를 생성합니다.
+        
+        Returns:
+            상태코드 201: 회원가입성공. "회원가입성공" 메세지 반환.
+            상태코드 400: 입력값 에러. (serialized.error메세지)
         """
         serialized = UserSerializer(data=request.data)
         if serialized.is_valid():
@@ -33,7 +38,7 @@ class UserSignView(APIView):
         현재 로그인 중인 유저(request.user)를 찾고 password를 검사합니다.
         정상 시 해당 유저의 is_active 값을 False로 바꾸어 저장합니다.
         
-        return:
+        Returns:
             상태코드 200: 탈퇴성공. "회원탈퇴성공" 메세지 반환.
             상태코드 400: 비밀번호 틀림.
             상태코드 401: 만료토큰/로그인안함.
