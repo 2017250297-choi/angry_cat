@@ -4,12 +4,15 @@ from user.models import User
 
 # Create your models here.
 class Article(models.Model):
-    """
-    Article 모델입니다. ai가 변조할 사진, 유저의 설명, ai의 코멘트, 제목 등 을 담습니다.
+    """Article 모델
+
+    ai가 변조할 사진, 유저의 설명, ai의 코멘트, 제목 등 을 담습니다.
+
     Attributes:
         author (ForeignKey): 아이디, 외래키, CASCADE
         title (varchar): 아티클의 제목. 필수입력. 30자 제한, str
         image (Image): AI가 변형한 이미지
+        origin_image (Image): AI가 변형하지 않은 이미지
         description (text): 사용자가 작성한 이미지에 대한 설명. 필수입력.
         cat_says (text): GPT가 생성해준 코멘트
         created_at (date): 생성일자
@@ -20,7 +23,8 @@ class Article(models.Model):
 
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=30)
-    image = models.ImageField(upload_to="%Y/%m/")
+    image = models.ImageField(upload_to="%Y/%m/edited/")
+    origin_image = models.ImageField(upload_to="%Y/%m/origin/")
     description = models.TextField()
     cat_says = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
