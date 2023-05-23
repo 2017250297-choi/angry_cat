@@ -80,3 +80,23 @@ class UserSerializer(serializers.ModelSerializer):
                 }
             )
         return super().validate(attrs)
+
+
+class UserSignOutSerializer(serializers.ModelSerializer):
+    """유저 탈퇴 시리얼라이저
+    
+    회원 탈퇴에 사용되는 serializer입니다.
+    """
+
+    class Meta:
+        model = User
+        fields = ("password",)
+        extra_kwargs = {
+            # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
+            "password": {"write_only": True},
+        }
+
+    def validate(self, attrs):
+        if not self.instance.check_password(attrs.get("password")):
+            raise serializers.ValidationError({"password": "password wrong."})
+        return super().validate(attrs)
