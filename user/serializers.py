@@ -12,14 +12,14 @@ def password_validation(password, password2):
     회원가입 시, 비밀번호와 비밀번호 확인 입력을 검증하기 위한 함수입니다.
     둘의 일치를 먼저 확인하고 입력값 자체가 유효한지 regex를 이용해 확인합니다.
     
-    args:
+    Args:
         password (str): 비밀번호 1입니다.
         password2 (str): 비밀번호 2입니다.
         
-    return:
+    Returns:
         없음
 
-    raise:
+    Raises:
         validationError: 두 비밀번호가 일치하지 않습니다.
         validationError: 비밀번호가 형식에 맞지 않습니다.
     """
@@ -79,4 +79,24 @@ class UserSerializer(serializers.ModelSerializer):
                     "username": "길이 6자리 ~32자리, 알파벳으로 시작하고 알파벳 대소문자와 숫자, 특수기호 -,_,@ 로 이루어져야합니다."
                 }
             )
+        return super().validate(attrs)
+
+
+class UserSignOutSerializer(serializers.ModelSerializer):
+    """유저 탈퇴 시리얼라이저
+    
+    회원 탈퇴에 사용되는 serializer입니다.
+    """
+
+    class Meta:
+        model = User
+        fields = ("password",)
+        extra_kwargs = {
+            # write_only : 해당 필드를 쓰기 전용으로 만들어 준다.
+            "password": {"write_only": True},
+        }
+
+    def validate(self, attrs):
+        if not self.instance.check_password(attrs.get("password")):
+            raise serializers.ValidationError({"password": "password wrong."})
         return super().validate(attrs)
