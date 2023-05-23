@@ -100,3 +100,50 @@ class UserSignOutSerializer(serializers.ModelSerializer):
         if not self.instance.check_password(attrs.get("password")):
             raise serializers.ValidationError({"password": "password wrong."})
         return super().validate(attrs)
+    
+
+class UserEditSerializer(serializers.ModelSerializer):
+    """유저 수정 시리얼라이저
+    
+    회원정보 수정에 사용되는 serializer입니다.
+    비밀번호 변경을 원할 수 있기 때문에 passoword2 필드가 추가됩니다.
+    보안을 위해 현재 비밀번호(current_password)를 입력해 검증 시 확인합니다.
+    """
+
+    current_password = serializers.CharField(
+        style={"input_type": "password"}, write_only=True
+    )
+    password2 = serializers.CharField(style={"input_type": "password"}, write_only=True)
+
+    class Meta:
+        model = User
+        exclude = (
+            "email",
+            "username",
+        )
+
+    def update(self, instance, validated_data):
+        """수정 메소드
+        
+        오버라이딩 하였습니다.
+        불필요한 데이터를 제거해 오류를 제거한 뒤 비밀번호 부터 지정 하고 저장을 계속합니다.
+        """
+        validated_data.pop("password2", None)
+        validated_data.pop("current_password", None)
+        if validated_data.get("password"):
+            instance.set_password(validated_data["password"])
+            validated_data.pop("password", None)
+        user = super().update(instance, validated_data)
+        return user
+
+    def validate(self, attrs):
+        """검증 메소드
+        
+        입력된 현재 비밀번호의 유효성부터 검사합니다.
+        """
+        if not self.instance.check_password(attrs.get("current_password")):
+            raise serializers.ValidationError(
+                {"current_password": "current password wrong."}
+            )
+        password_validation(attrs.get("password"), attrs.get("password2"))
+        return super().validate(attrs)
