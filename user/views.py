@@ -5,6 +5,7 @@ from user.serializers import (
     UserSerializer,
     UserSignOutSerializer,
 )
+from user.permissions import IsAuthenticatedOrReadOrSignUp
 from rest_framework.generics import get_object_or_404
 from user.models import User
 
@@ -14,6 +15,8 @@ class UserSignView(APIView):
 
     회원가입, 탈퇴, 유저정보 조회, 유저정보 수정을 처리하는 View입니다.
     """
+
+    permission_classes = (IsAuthenticatedOrReadOrSignUp,)
 
     def post(self, request):
         """회원가입
@@ -52,3 +55,23 @@ class UserSignView(APIView):
             user.save()
             return Response({"message": "회원탈퇴성공"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def get(self, request, user_id=None):
+        """회원조회
+        
+        get요청과, 선택적으로 user_id를 입력받습니다.
+        user_id 입력이 있다면 대상의 정보를,
+        없다면 request.user의 정보를 찾아 반환합니다.
+    
+        Args:
+            user_id (int): 선택적 입력. url 매개 변수.
+                
+        Returns:
+            상태코드 200: 조회한 회원정보 반환.
+            상태코드 404: 유저가 없음.
+        """
+        user_id_ = user_id if user_id else request.user.id
+        user = get_object_or_404(User, id=user_id_)
+        serialized = UserSerializer(user)
+        return Response(serialized.data, status=status.HTTP_200_OK)
