@@ -11,6 +11,17 @@ def password_validation(password, password2):
 
     회원가입 시, 비밀번호와 비밀번호 확인 입력을 검증하기 위한 함수입니다.
     둘의 일치를 먼저 확인하고 입력값 자체가 유효한지 regex를 이용해 확인합니다.
+    
+    args:
+        password (str): 비밀번호 1입니다.
+        password2 (str): 비밀번호 2입니다.
+        
+    return:
+        없음
+
+    raise:
+        validationError: 두 비밀번호가 일치하지 않습니다.
+        validationError: 비밀번호가 형식에 맞지 않습니다.
     """
     if password != password2:
         raise serializers.ValidationError({"password": "두 비밀번호가 일치하지 않습니다."})

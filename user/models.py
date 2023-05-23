@@ -34,14 +34,14 @@ class User(AbstractBaseUser):
     기본 유저 모델을 커스텀한 유저 모델입니다.
 
     Attributes:
-        username : 아이디, 유니크
-        email : 이메일, 필수, 유니크
-        password : 패스워드
+        username (str): 아이디, 유니크
+        email (str): 이메일, 필수, 유니크
+        password (str): 패스워드
         is_active (bool): 활성 여부
         is_admin (bool): 관리자 여부
-        bio : 소개
-        created_at : 가입시간
-        updated_at : 수정시간
+        bio (str): 소개
+        created_at (date): 가입시간
+        updated_at (date): 수정시간
     """
 
     username = models.CharField(
