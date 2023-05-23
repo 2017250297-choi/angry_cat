@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from user.serializers import (
     UserSerializer,
     UserSignOutSerializer,
+    UserEditSerializer,
 )
 from user.permissions import IsAuthenticatedOrReadOrSignUp
 from rest_framework.generics import get_object_or_404
@@ -75,3 +76,23 @@ class UserSignView(APIView):
         user = get_object_or_404(User, id=user_id_)
         serialized = UserSerializer(user)
         return Response(serialized.data, status=status.HTTP_200_OK)
+
+    def patch(self, request):
+        """회원수정
+        
+        patch요청과 current_password, 수정할 데이터를 입력받습니다.
+        패스워드를 수정할 경우 password2도 입력받습니다.
+        현재 로그인 중인 유저(request.user)를 찾고 current_password를 검사합니다.
+        수정할 값들을 검사하여 정상 시 유저정보를 수정합니다.
+                
+        Returns:
+            상태코드 200: 수정성공. "회원수정성공" 메세지 반환.
+            상태코드 400: 비밀번호 틀림. 수정할 값 틀림.
+            상태코드 404: 유저가 없음.
+        """
+        user = get_object_or_404(User, id=request.user.id)
+        serialized = UserEditSerializer(user, request.data, partial=True)
+        if serialized.is_valid():
+            serialized.save()
+            return Response({"message": "회원수정성공"}, status=status.HTTP_200_OK)
+        return Response(serialized.errors, status=status.HTTP_400_BAD_REQUEST)
