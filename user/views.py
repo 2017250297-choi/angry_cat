@@ -48,8 +48,7 @@ class UserSignView(APIView):
             상태코드 401: 만료토큰/로그인안함.
             상태코드 404: 유저가 없음.
         """
-        user = request.user
-        user = get_object_or_404(User, id=user.id)
+        user = get_object_or_404(User, id=request.user.id)
         serializer = UserSignOutSerializer(user, request.data)
         if serializer.is_valid():
             user.is_active = False
