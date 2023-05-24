@@ -71,11 +71,8 @@ class ArticleView(generics.ListCreateAPIView):
             (QuerySet): request의 user에서 역참조해 bookmarked_articles 전체를 보여줍니다.
             비로그인 유저는 빈 쿼리셋을 반환합니다.
         """
-        if self.request.user.is_authenticated:
-            queryset = self.request.user.bookmarked_articles.all()
-            return queryset.order_by("-created_at")
-        else:
-            return Article.objects.none()
+        queryset = self.request.user.bookmarked_articles.all()
+        return queryset.order_by("-created_at")
 
     def of_user(self):
         """ArticleView.of_user
