@@ -2,7 +2,13 @@ from django.db import models
 from user.models import User
 
 
+from user.models import User
+
 # Create your models here.
+<<<<<<< HEAD
+
+
+
 class Article(models.Model):
     """
     Article 모델입니다. ai가 변조할 사진, 유저의 설명, ai의 코멘트, 제목 등 을 담습니다.
@@ -16,10 +22,45 @@ class Article(models.Model):
         updated_at (date): 수정일자
         likes (ManyToManyField): 해당 글에 좋아요를 표시한 사용자들(역참조: like_articles)
         bookmarks (ManyToManyField): 해당 글을 북마크한 사용자들(역참조: bookmarked_articles)
+>>>>>>> dde92750b464e9c4726734cf579c85ba661381c0
     """
 
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=30)
+<<<<<<< HEAD
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    
+
+    likes = models.ManyToManyField(User, related_name="like_articles")
+    bookmarks = models.ManyToManyField(User, related_name="bookmarked_articles")
+
+
+      
+    def __str__(self):
+        return str(self.title)
+    
+class Comment(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name="comment_set")
+    content = models.TextField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+ 
+    def __str__(self):
+       return str(self.content)
+#def()파이썬에서 함수 또는 메소드를 정의하기 위해 사용디는 키워드
+#'return self.comment'는 'self.comment' 값을 문자열로 변환하고
+#변환된 문자열을 변환하는 구몬     
+
+    
+
+
+
+=======
     image = models.ImageField(upload_to="%Y/%m/")
     description = models.TextField()
     cat_says = models.TextField()
@@ -36,3 +77,4 @@ class Article(models.Model):
 # def()파이썬에서 함수 또는 메소드를 정의하기 위해 사용디는 키워드
 #'return self.comment'는 'self.comment' 값을 문자열로 변환하고
 # 변환된 문자열을 변환하는 구몬
+>>>>>>> dde92750b464e9c4726734cf579c85ba661381c0
