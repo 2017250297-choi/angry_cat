@@ -11,7 +11,10 @@ from article.serializers import (
     CommentCreateSerializer,
     CommentSerializer,
 )
-from article.permissions import IsOwnerOrReadOnly
+from article.permissions import (
+    IsOwnerOrReadOnly,
+    IsAuthenticatedOrReadOnlyExceptBookMark,
+)
 from article.paginations import ArticlePagination, CommentPagination
 from django.db.models import Count
 from datetime import timedelta
@@ -35,7 +38,7 @@ class ArticleView(generics.ListCreateAPIView):
 
     """
 
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnlyExceptBookMark]
     pagination_class = ArticlePagination
     serializer_class = ArticleListSerializer
     queryset = Article.objects.all().order_by("-created_at")
