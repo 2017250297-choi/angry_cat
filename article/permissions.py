@@ -1,6 +1,22 @@
 from rest_framework import permissions
 
 
+class IsAuthenticatedOrReadOnlyExceptBookMark(permissions.BasePermission):
+    """IsAuthenticatedOrReadOnlyExceptBookMark
+
+    북마크 조회를 제외한 GET요청은 비로그인시에도 요청가능합니다.
+    북마크 조회와 기타 요청(POST)는 로그인이 필요합니다.
+    """
+
+    def has_permission(self, request, view):
+        if (
+            request.GET.get("filter") == "bookmarked"
+            or request.method not in permissions.SAFE_METHODS
+        ):
+            return bool(request.user and request.user.is_authenticated)
+        return True
+
+
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """IsOwnerOrReadOnly 자신의 글만 수정/삭제가능한 퍼미션
 
@@ -20,7 +36,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         Args:
             request (request): 요청 데이터
             view (View): view 클래스
-            obj (Article): 대상이 되는 Article ORM객체
+            obj (Article): 대상이 되는 Article/Comment ORM객체
 
         Return:
             (bool): True - 요청의 user가 작성자일 경우, False - 요청의 user가 작성자가 아닐 경우
