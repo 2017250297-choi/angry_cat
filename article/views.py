@@ -305,19 +305,19 @@ class CommentDetailView(APIView):
     HTTP GET 메서드를 사용하여 해당 댓글의 정보를 요청할 때 사용
     됩니다.
     """
-    def put(self, request, article_id,commet_id):
-        commet = get_object_or_404(id=commet_id)
-        serializer = CommentCreateSerializer(commet, data=request.data)
-        self.check_object_permissions(self.request, commet)
+    def put(self, request, article_id,comment_id):
+        comment = get_object_or_404(id=comment_id)
+        serializer = CommentCreateSerializer(comment, data=request.data)
+        self.check_object_permissions(self.request, comment)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "수정완료"}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request,article_id,commet_id):
+    def delete(self, request,article_id,comment_id):
         
-         commet = get_object_or_404(Comment, id=commet_id)
-         self.check_object_permissions(self.request, commet)
-         commet.delete()
+         comment = get_object_or_404(Comment, id=comment_id)
+         self.check_object_permissions(self.request, comment)
+         comment.delete()
          return Response({"message": "삭제완료"}, status=status.HTTP_204_NO_CONTENT)
