@@ -3,7 +3,11 @@ from article.models import Article, Comment
 
 
 class CommentSerializer(serializers.ModelSerializer):
-
+    """
+    comment/ url에 GET방식일 때 사용합니다.
+    comment db에 저장된 모든 게시글을 보여줍니다.
+    DateTimeField를 사용하여 시간 가독성을 좋게했습니다.
+    """
     created_at = serializers.DateTimeField(format="%m월%d일 %H:%M", read_only=True)
     author = serializers.SerializerMethodField()
 

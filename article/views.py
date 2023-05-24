@@ -268,10 +268,15 @@ class BookmarkView(APIView):
 
 class CommentView(APIView):
     """
-    댓글을 작성하는 공간입니다.
-    GET 요청을 처리하여 특정 게시물의 댓글 데이터를 반환하는 기능을 담당합니다.
-    get() 메소드는 특정 게시물에 대한 댓글 데이터를 조회하여 시리얼라이즈한 후,
-    해당 데이터를 JSON 형식으로 응답으로 반환합니다.
+    permission_classes: permission_classes는 Django REST Framework에서 제공하는 속성으로, 
+    해당 뷰에 대한 접근 권한을 설정하는 데 사용됩니다
+    
+    Article.objects.get(id=article_id): Article 모델에서 id가 article_id와 일치하는 객체를 가져오는 코드입니다. 
+    Article 모델은 데이터베이스에서 게시물을 나타내는 모델로 가정됩니다.
+    
+    serializer.data: serializer 객체의 data 속성은 시리얼라이저를 통해 
+    직렬화된 데이터를 반환합니다.
+    
     """
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -299,12 +304,24 @@ class CommentView(APIView):
 
 
 class CommentDetailView(APIView):
-    """
-    특정 댓글에 대한 정보를 반환하는 엔드포인트를 정의하는 클래스
-    입니다.
-    HTTP GET 메서드를 사용하여 해당 댓글의 정보를 요청할 때 사용
-    됩니다.
-    """
+  """commentDeatilview
+  put 요청시 HTTPPUT에 따라 원하는 조건에 맞는 'article_id와'comment_id가
+  전달됩니다.'.
+
+    Attributes:
+        APIView: APIView는 Django REST Framework에서 제공하는 기본 뷰 클래스입니다. 
+        이 클래스를 상속받아 API 엔드포인트의 동작을 정의할 수 있습니다.
+          
+       serializer.is_valid(): serializer 객체의 is_valid() 메서드는 시리얼라이저가 
+       유효한 데이터를 가지고 있는지를 확인합니다. \
+       시리얼라이저가 정의한 유효성 검사 규칙을 통과하는 경우에만 True를 반환합니다.
+       
+       serializer.save(): serializer.save()는 시리얼라이저를 사용하여 생성 또는 수정된 데이터를
+       저장하는 메서드입니다. 
+       이 메서드를 호출하면 시리얼라이저를 통해 전달된 데이터가 기반 모델에 저장됩니다.
+          
+  """
+    
     def put(self, request, article_id,comment_id):
         comment = get_object_or_404(id=comment_id)
         serializer = CommentCreateSerializer(comment, data=request.data)
