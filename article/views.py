@@ -1,3 +1,4 @@
+
 from rest_framework import status, permissions
 from rest_framework.decorators import APIView
 from rest_framework.response import Response
@@ -22,6 +23,7 @@ from user.models import User
 from rest_framework.generics import get_object_or_404
 
 
+
 # Create your views here.
 class ArticleView(generics.ListCreateAPIView):
     """ArticleView
@@ -34,6 +36,7 @@ class ArticleView(generics.ListCreateAPIView):
         paginations_class (Pagination): 페이지네이션
         serializer_class (Serializer): 어떤 시리얼라이저를 이용하여 응답 데이터 형성할지 지정
         queryset (QuerySet): 기본으로 get_queryset이 반환할 쿼리 셋(최신순 정렬된 전체게시글)
+
     """
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -122,6 +125,7 @@ class ArticleView(generics.ListCreateAPIView):
         serializer = ArticleCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author=request.user)
+
             return Response(
                 {"message": "작성완료"},
                 status=status.HTTP_201_CREATED,
@@ -181,7 +185,7 @@ class ArticleDetailView(APIView):
     def delete(self, request, article_id):
         """ArticleDetailView.delete
 
-        delete요청 시 제시한 article_id의 게시글을 삭제한다.
+        delete요청 시 제시한 article_id의 게시글을 삭제합니다.
 
         Args:
             article_id (int): 게시글의 id를 지정한다.
@@ -196,6 +200,7 @@ class ArticleDetailView(APIView):
         return Response({"message": "삭제완료"}, status=status.HTTP_204_NO_CONTENT)
 
 
+
 class LikeView(APIView):
     """LikeView
 
@@ -203,10 +208,10 @@ class LikeView(APIView):
 
     Attributes:
         permission (permissions): IsAuthenticated 로그인한 사용자만 접속을 허용합니다.
-
     """
 
     permission_classes = [permissions.IsAuthenticated]
+
 
     def post(self, request, article_id):
         """LikeView.post
@@ -260,3 +265,76 @@ class BookmarkView(APIView):
         else:
             article.bookmarks.add(request.user)
             return Response({"message": "북마크가 추가되었습니다."}, status=status.HTTP_200_OK)
+
+class CommentView(APIView):
+    """
+    permission_classes: permission_classes는 Django REST Framework에서 제공하는 속성으로, 
+    해당 뷰에 대한 접근 권한을 설정하는 데 사용됩니다
+    
+    Article.objects.get(id=article_id): Article 모델에서 id가 article_id와 일치하는 객체를 가져오는 코드입니다. 
+    Article 모델은 데이터베이스에서 게시물을 나타내는 모델로 가정됩니다.
+    
+    serializer.data: serializer 객체의 data 속성은 시리얼라이저를 통해 
+    직렬화된 데이터를 반환합니다.
+    
+    """
+
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get(self, request, article_id):
+        article = Article.objects.get(id=article_id)
+        comments = article.comment_set.all()
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, article_id):
+        serializer = CommentCreateSerializer(
+            data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save(author=request.user, article_id=article_id)
+            return Response(
+                {"message": "작성완료"},
+                status=status.HTTP_201_CREATED,
+            )
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class CommentDetailView(APIView):
+  """commentDeatilview
+  put 요청시 HTTPPUT에 따라 원하는 조건에 맞는 'article_id와'comment_id가
+  전달됩니다.'.
+
+    Attributes:
+        APIView: APIView는 Django REST Framework에서 제공하는 기본 뷰 클래스입니다. 
+        이 클래스를 상속받아 API 엔드포인트의 동작을 정의할 수 있습니다.
+          
+       serializer.is_valid(): serializer 객체의 is_valid() 메서드는 시리얼라이저가 
+       유효한 데이터를 가지고 있는지를 확인합니다. \
+       시리얼라이저가 정의한 유효성 검사 규칙을 통과하는 경우에만 True를 반환합니다.
+       
+       serializer.save(): serializer.save()는 시리얼라이저를 사용하여 생성 또는 수정된 데이터를
+       저장하는 메서드입니다. 
+       이 메서드를 호출하면 시리얼라이저를 통해 전달된 데이터가 기반 모델에 저장됩니다.
+          
+  """
+    
+    def put(self, request, article_id,comment_id):
+        comment = get_object_or_404(id=comment_id)
+        serializer = CommentCreateSerializer(comment, data=request.data)
+        self.check_object_permissions(self.request, comment)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "수정완료"}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request,article_id,comment_id):
+        
+         comment = get_object_or_404(Comment, id=comment_id)
+         self.check_object_permissions(self.request, comment)
+         comment.delete()
+         return Response({"message": "삭제완료"}, status=status.HTTP_204_NO_CONTENT)
