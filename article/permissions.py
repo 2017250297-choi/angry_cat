@@ -20,7 +20,7 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         Args:
             request (request): 요청 데이터
             view (View): view 클래스
-            obj (Article): 대상이 되는 Article ORM객체
+            obj (Article): 대상이 되는 Article/Comment ORM객체
 
         Return:
             (bool): True - 요청의 user가 작성자일 경우, False - 요청의 user가 작성자가 아닐 경우
