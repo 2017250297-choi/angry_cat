@@ -136,7 +136,7 @@ class ArticleDetailView(APIView):
     게시글 상세보기, 게시글 수정, 게시글 삭제를 수행합니다.
 
     Attributes:
-        premission (permissions): IsOwnerOrReadOnly은 요청자가 게시글의 작성자일 경우와 아닐 경우를 판단하여 권한을 부여. 기본적으로 읽기 권한만을 주어 게시글을 관리.
+        permission (permissions): IsOwnerOrReadOnly은 요청자가 게시글의 작성자일 경우와 아닐 경우를 판단하여 권한을 부여. 기본적으로 읽기 권한만을 주어 게시글을 관리.
     """
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
@@ -202,7 +202,7 @@ class LikeView(APIView):
     게시글 좋아요 기능을 수행합니다.
 
     Attributes:
-        premission (permissions): IsAuthenticated 로그인한 사용자만 접속을 허용합니다.
+        permission (permissions): IsAuthenticated 로그인한 사용자만 접속을 허용합니다.
 
     """
 
@@ -235,7 +235,7 @@ class BookmarkView(APIView):
     게시글 북마크 기능을 수행합니다. 유저는 자신이 북마크 한 글만 모아볼 수 있습니다.
 
     Attributes:
-        premission (permissions): IsAuthenticated 로그인한 사용자만 접속을 허용합니다.
+        permission (permissions): IsAuthenticated 로그인한 사용자만 접속을 허용합니다.
 
     """
 
