@@ -102,13 +102,13 @@ class ArticleView(generics.ListCreateAPIView):
         Raises:
             Http404: 쿼리파라미터가 존재하지 않거나 존재하지 않는 유저 참조 시도
         """
-        quety_select = {
+        query_select = {
             "trending": self.trending,
             "bookmarked": self.bookmarked,
             "user": self.of_user,
         }
         selection = self.request.GET.get("filter", None)
-        return quety_select.get(selection, super().get_queryset)()
+        return query_select.get(selection, super().get_queryset)()
 
     def post(self, request, *args, **kwargs):
         """ArticleView.post
