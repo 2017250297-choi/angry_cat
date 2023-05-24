@@ -1,9 +1,7 @@
-
 from rest_framework import status, permissions
 from rest_framework.decorators import APIView
 from rest_framework.response import Response
 from rest_framework import generics
-from rest_framework.exceptions import NotFound
 from article.models import Article, Comment
 from article.serializers import (
     ArticleSerializer,
@@ -14,14 +12,12 @@ from article.serializers import (
     CommentSerializer,
 )
 from article.permissions import IsOwnerOrReadOnly
-from article.paginations import ArticlePagination
-from django.db.models.query_utils import Q
-from user.serializers import UserSerializer
+from article.paginations import ArticlePagination, CommentPagination
 from django.db.models import Count
-from datetime import datetime, timedelta
+from datetime import timedelta
 from user.models import User
 from rest_framework.generics import get_object_or_404
-
+from django.utils import timezone
 
 
 # Create your views here.
@@ -40,7 +36,7 @@ class ArticleView(generics.ListCreateAPIView):
     """
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    paginations_class = ArticlePagination
+    pagination_class = ArticlePagination
     serializer_class = ArticleListSerializer
     queryset = Article.objects.all().order_by("-created_at")
 
@@ -55,9 +51,9 @@ class ArticleView(generics.ListCreateAPIView):
             (QuerySet): Article들중 created_at이 3일이내인 글들을 like_count갯수 내림차순으로 정렬해 반환
         """
         queryset = (
-            Article.objects.filter(created_at__gte=datetime.now() - timedelta(days=3))
+            Article.objects.filter(created_at__gte=timezone.now() - timedelta(days=3))
             .annotate(like_count=Count("likes"))
-            .order_by("-like_count")
+            .order_by("-like_count", "-created_at")
         )
         return queryset
 
@@ -70,11 +66,13 @@ class ArticleView(generics.ListCreateAPIView):
             없음
         Return:
             (QuerySet): request의 user에서 역참조해 bookmarked_articles 전체를 보여줍니다.
-        Raises:
-            Http404: 비로그인유저의 요청시
+            비로그인 유저는 빈 쿼리셋을 반환합니다.
         """
-        queryset = self.request.user.bookmarked_articles.all()
-        return queryset.order_by("-created_at")
+        if self.request.user.is_authenticated:
+            queryset = self.request.user.bookmarked_articles.all()
+            return queryset.order_by("-created_at")
+        else:
+            return Article.objects.none()
 
     def of_user(self):
         """ArticleView.of_user
@@ -89,7 +87,7 @@ class ArticleView(generics.ListCreateAPIView):
             Http404: 쿼리파라미터가 존재하지 않거나 존재하지 않는 유저 참조 시도
         """
         user_id = int(self.request.GET.get("user_id", 0))
-        user = get_object_or_404(user, id=user_id)
+        user = get_object_or_404(User, id=user_id)
         return user.article_set.all().order_by("-created_at")
 
     def get_queryset(self):
@@ -174,8 +172,8 @@ class ArticleDetailView(APIView):
         오류 시 404 / 존재하지않는 게시글
         """
         article = get_object_or_404(Article, id=article_id)
-        serializer = ArticleEditSerializer(article, data=request.data, partial=True)
         self.check_object_permissions(self.request, article)
+        serializer = ArticleEditSerializer(article, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "수정완료"}, status=status.HTTP_200_OK)
@@ -200,7 +198,6 @@ class ArticleDetailView(APIView):
         return Response({"message": "삭제완료"}, status=status.HTTP_204_NO_CONTENT)
 
 
-
 class LikeView(APIView):
     """LikeView
 
@@ -211,7 +208,6 @@ class LikeView(APIView):
     """
 
     permission_classes = [permissions.IsAuthenticated]
-
 
     def post(self, request, article_id):
         """LikeView.post
@@ -266,33 +262,66 @@ class BookmarkView(APIView):
             article.bookmarks.add(request.user)
             return Response({"message": "북마크가 추가되었습니다."}, status=status.HTTP_200_OK)
 
-class CommentView(APIView):
-    """
-    permission_classes: permission_classes는 Django REST Framework에서 제공하는 속성으로, 
-    해당 뷰에 대한 접근 권한을 설정하는 데 사용됩니다
-    
-    Article.objects.get(id=article_id): Article 모델에서 id가 article_id와 일치하는 객체를 가져오는 코드입니다. 
-    Article 모델은 데이터베이스에서 게시물을 나타내는 모델로 가정됩니다.
-    
-    serializer.data: serializer 객체의 data 속성은 시리얼라이저를 통해 
-    직렬화된 데이터를 반환합니다.
-    
+
+class CommentView(generics.ListAPIView):
+    """CommentView
+
+    get 요청시 querystring에 따라 원하는 조건에 맞는 게시글의 목록을 불러옵니다.
+    post 요청시 게시글을 작성하여 DB에 저장합니다.
+
+    Attributes:
+        permission_classes (list): 퍼미션의 리스트
+        paginations_class (Pagination): 페이지네이션
+        serializer_class (Serializer): 어떤 시리얼라이저를 이용하여 응답 데이터 형성할지 지정
+        queryset (QuerySet): 기본으로 get_queryset이 반환할 쿼리 셋(최신순 정렬된 전체게시글)
+
     """
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = CommentPagination
+    serializer_class = CommentSerializer
+    queryset = None
 
-    def get(self, request, article_id):
-        article = Article.objects.get(id=article_id)
-        comments = article.comment_set.all()
-        serializer = CommentSerializer(comments, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request, *args, **kwargs):
+        """CommentView.get
 
-    def post(self, request, article_id):
+        get요청 시 제시한 article_id와 일치하는 article의 댓글 목록을 불러옵니다.
+
+        Args:
+            article_id (int): 게시글의 id를 지정합니다.
+
+        정상 시 200 / 코멘트 목록 반환
+        오류 시 401 / 토큰 만료
+        오류 시 404 / 존재하지 않는 게시글
+        """
+        print((self.pagination_class.page_query_param))
+        comments = (
+            get_object_or_404(Article, id=kwargs.get("article_id"))
+            .comment_set.all()
+            .order_by("-created_at")
+        )
+        self.queryset = comments
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        """CommentView.post
+
+        request body로 content를 받습니다.
+        path variable로 댓글을 달 article에 접근합니다.
+
+        Args:
+            article_id (int): 게시글의 id를 지정합니다.
+
+        정상 시 201 / "작성완료" 메세지를 반환합니다.
+        비정상 시 401 / 토큰만료,비로그인
+        비정상 시 400 / error내용을 반환합니다.
+        """
         serializer = CommentCreateSerializer(
             data=request.data, context={"request": request}
         )
+        article = get_object_or_404(Article, id=kwargs.get("article_id"))
         if serializer.is_valid():
-            serializer.save(author=request.user, article_id=article_id)
+            serializer.save(author=request.user, article=article)
             return Response(
                 {"message": "작성완료"},
                 status=status.HTTP_201_CREATED,
@@ -301,29 +330,30 @@ class CommentView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 class CommentDetailView(APIView):
-  """commentDeatilview
-  put 요청시 HTTPPUT에 따라 원하는 조건에 맞는 'article_id와'comment_id가
-  전달됩니다.'.
+    """commentDeatilview
+    댓글 수정/삭제를 위한 View입니다.
 
-    Attributes:
-        APIView: APIView는 Django REST Framework에서 제공하는 기본 뷰 클래스입니다. 
-        이 클래스를 상속받아 API 엔드포인트의 동작을 정의할 수 있습니다.
-          
-       serializer.is_valid(): serializer 객체의 is_valid() 메서드는 시리얼라이저가 
-       유효한 데이터를 가지고 있는지를 확인합니다. \
-       시리얼라이저가 정의한 유효성 검사 규칙을 통과하는 경우에만 True를 반환합니다.
-       
-       serializer.save(): serializer.save()는 시리얼라이저를 사용하여 생성 또는 수정된 데이터를
-       저장하는 메서드입니다. 
-       이 메서드를 호출하면 시리얼라이저를 통해 전달된 데이터가 기반 모델에 저장됩니다.
-          
-  """
-    
-    def put(self, request, article_id,comment_id):
-        comment = get_object_or_404(id=comment_id)
+        Attributes:
+            permission_classes (list): 권한설정을 위한 permission클래스들의 리스트입니다. 댓글작성자만 수정/삭제가능하도록 설정되었습니다.
+
+    """
+
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def put(self, request, **kwargs):
+        """CommentDetailView.put
+
+        댓글 수정.
+
+        KwArg:
+            comment_id (int): 수정할 댓글의 id로 지정.
+
+        정상 시 200 / "수정완료" 메시지 반환
+        오류 시 401 / 권한없음(비로그인, 만료, 작성자 아님)
+        오류 시 400 / 존재하지 않는 댓글
+        """
+        comment = get_object_or_404(Comment, id=kwargs.get("comment_id"))
         serializer = CommentCreateSerializer(comment, data=request.data)
         self.check_object_permissions(self.request, comment)
         if serializer.is_valid():
@@ -332,9 +362,19 @@ class CommentDetailView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request,article_id,comment_id):
-        
-         comment = get_object_or_404(Comment, id=comment_id)
-         self.check_object_permissions(self.request, comment)
-         comment.delete()
-         return Response({"message": "삭제완료"}, status=status.HTTP_204_NO_CONTENT)
+    def delete(self, request, **kwargs):
+        """CommentDetailView.delete
+
+        댓글 삭제.
+
+        KwArg:
+            comment_id (int): 삭제할 댓글의 id로 지정.
+
+        정상 시 200 / "삭제완료" 메시지 반환
+        오류 시 401 / 권한없음(비로그인, 만료, 작성자 아님)
+        오류 시 400 / 존재하지 않는 댓글
+        """
+        comment = get_object_or_404(Comment, id=kwargs.get("comment_id"))
+        self.check_object_permissions(self.request, comment)
+        comment.delete()
+        return Response({"message": "삭제완료"}, status=status.HTTP_204_NO_CONTENT)
