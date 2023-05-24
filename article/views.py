@@ -266,7 +266,7 @@ class BookmarkView(APIView):
             return Response({"message": "북마크가 추가되었습니다."}, status=status.HTTP_200_OK)
 
 
-class CommentView(generics.ListAPIView):
+class CommentView(generics.ListCreateAPIView):
     """CommentView
 
     get 요청시 querystring에 따라 원하는 조건에 맞는 게시글의 목록을 불러옵니다.
