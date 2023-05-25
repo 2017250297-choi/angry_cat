@@ -1,5 +1,6 @@
 from django.urls import path
 from article import views
+from ai_process.views import MentgenView
 
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
         views.CommentDetailView.as_view(),
         name="article_comment_detail_view",
     ),
+    path("mentgen/", MentgenView.as_view(), name="ment_gen"),
 ]
