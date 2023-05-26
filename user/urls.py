@@ -14,4 +14,6 @@ urlpatterns = [
     path("verify/", TokenVerifyView.as_view(), name="verify"),
     # access token으로 post요청. 토큰이 expire하지 않았는지 확인. 유효할시 200.
     # 유효하지 않을시 401 {"detail":"설명", "code":"token_not_valid"}
+    path("google/url/", views.GoogleURLView.as_view(), name="google_url"),
+    path("google/token/", views.GoogleTokenView.as_view(), name="google_url"),
 ]

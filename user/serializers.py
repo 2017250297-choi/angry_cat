@@ -11,11 +11,11 @@ def password_validation(password, password2):
 
     회원가입 시, 비밀번호와 비밀번호 확인 입력을 검증하기 위한 함수입니다.
     둘의 일치를 먼저 확인하고 입력값 자체가 유효한지 regex를 이용해 확인합니다.
-    
+
     Args:
         password (str): 비밀번호 1입니다.
         password2 (str): 비밀번호 2입니다.
-        
+
     Returns:
         없음
 
@@ -84,7 +84,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class UserSignOutSerializer(serializers.ModelSerializer):
     """유저 탈퇴 시리얼라이저
-    
+
     회원 탈퇴에 사용되는 serializer입니다.
     """
 
@@ -100,11 +100,11 @@ class UserSignOutSerializer(serializers.ModelSerializer):
         if not self.instance.check_password(attrs.get("password")):
             raise serializers.ValidationError({"password": "password wrong."})
         return super().validate(attrs)
-    
+
 
 class UserEditSerializer(serializers.ModelSerializer):
     """유저 수정 시리얼라이저
-    
+
     회원정보 수정에 사용되는 serializer입니다.
     비밀번호 변경을 원할 수 있기 때문에 passoword2 필드가 추가됩니다.
     보안을 위해 현재 비밀번호(current_password)를 입력해 검증 시 확인합니다.
@@ -124,7 +124,7 @@ class UserEditSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """수정 메소드
-        
+
         오버라이딩 하였습니다.
         불필요한 데이터를 제거해 오류를 제거한 뒤 비밀번호 부터 지정 하고 저장을 계속합니다.
         """
@@ -138,7 +138,7 @@ class UserEditSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """검증 메소드
-        
+
         입력된 현재 비밀번호의 유효성부터 검사합니다.
         """
         if not self.instance.check_password(attrs.get("current_password")):
@@ -147,3 +147,29 @@ class UserEditSerializer(serializers.ModelSerializer):
             )
         password_validation(attrs.get("password"), attrs.get("password2"))
         return super().validate(attrs)
+
+
+class GoogleUserSerializer(serializers.ModelSerializer):
+    """구글 유저 시리얼라이저
+
+    구글 Oauth API를 이용한 회원가입에 사용되는 serializer입니다.
+    """
+
+    # 입력할 때만 쓰이는 password2 시리얼라이저필드 새로 정의
+
+    class Meta:
+        model = User
+        fields = "__all__"
+
+    def create(self, validated_data):
+        """생성 메소드
+
+        부모 클래스의 create를 오버라이딩합니다.
+        검증이후 실행됩니다.
+        """
+        # 저장할 때는 모델에 password2 필드가 없으므로 제거
+        user = super().create(validated_data)
+        user.set_unusable_password()
+        user.logintype = "GOOGLE"
+        user.save()
+        return user

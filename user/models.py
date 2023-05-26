@@ -42,6 +42,8 @@ class User(AbstractBaseUser):
         bio (str): 소개
         created_at (date): 가입시간
         updated_at (date): 수정시간
+        login_types (tuple): 회원가입 유형의 종류를 지정
+        logintype (str): 회원가입 유형 지정(그냥 이메일등록/구글연동)
     """
 
     username = models.CharField(
@@ -58,6 +60,11 @@ class User(AbstractBaseUser):
     bio = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    login_types = (
+        ("GOOGLE", "GOOGLE"),
+        ("LOCAL", "LOCAL"),
+    )
+    logintype = models.CharField(choices=login_types, max_length=6, default="LOCAL")
 
     objects = UserManager()
 
