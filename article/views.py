@@ -294,7 +294,6 @@ class CommentView(generics.ListCreateAPIView):
         오류 시 401 / 토큰 만료
         오류 시 404 / 존재하지 않는 게시글
         """
-        print((self.pagination_class.page_query_param))
         comments = (
             get_object_or_404(Article, id=kwargs.get("article_id"))
             .comment_set.all()
