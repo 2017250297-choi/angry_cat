@@ -16,7 +16,7 @@ import requests
 from rest_framework_simplejwt.tokens import RefreshToken
 
 FRONT_BASEURI = "http://127.0.0.1:5500/"
-GOOGLE_CALLBACK_URI = FRONT_BASEURI + "temp.html"
+GOOGLE_CALLBACK_URI = FRONT_BASEURI + "index.html"
 
 
 class UserSignView(APIView):
