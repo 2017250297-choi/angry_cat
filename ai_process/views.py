@@ -5,6 +5,7 @@ import openai
 import os
 from ai_process.serializers import PictureSerializer
 from ai_process.cat import picture_generator
+from .models import Picture
 
 openai.api_key = os.environ.get("api_key")
 
@@ -57,6 +58,7 @@ class PicgenView(APIView):
 
         post요청 시 입력받은 사진으로 변환된 사진을 생성하여 반환합니다.
         """
+        Picture.objects.filter(article=None).delete()
         serializer = PictureSerializer(data=request.data)
         if serializer.is_valid():
             orm = serializer.save()
