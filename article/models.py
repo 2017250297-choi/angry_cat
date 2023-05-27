@@ -17,8 +17,7 @@ class Article(models.Model):
     Attributes:
         author (ForeignKey): 아이디, 외래키, CASCADE
         title (varchar): 아티클의 제목. 필수입력. 30자 제한, str
-        image (Image): AI가 변형한 이미지
-        origin_image (Image): AI가 변형하지 않은 이미지
+        pictures (ForeignKey): Picture객체 id,외래키,CASCADE. 원본이미지와 변경이미지를 저장.
         description (text): 사용자가 작성한 이미지에 대한 설명. 필수입력.
         cat_says (text): GPT가 생성해준 코멘트
         created_at (date): 생성일자

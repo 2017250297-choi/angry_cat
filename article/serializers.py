@@ -4,10 +4,15 @@ from ai_process.models import Picture
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    """
+    """CommentSerializer 댓글 조회용 시리얼라이저
+
     comment/ url에 GET방식일 때 사용합니다.
     comment db에 저장된 모든 게시글을 보여줍니다.
     DateTimeField를 사용하여 시간 가독성을 좋게했습니다.
+
+    Attributes:
+        created_at (DateTime): 작성일의 형식을 바꿔 표현합니다.
+        author (str): 작성자 username
     """
 
     created_at = serializers.DateTimeField(format="%m월%d일 %H:%M", read_only=True)
@@ -22,6 +27,12 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CommentCreateSerializer(serializers.ModelSerializer):
+    """CommentCreateSerializer 댓글 작성용 시리얼라이저
+
+    comment/ url에 POST방식일 때, comment/<int:comment_id>/ url에 PUT방식일 때 사용합니다.
+    content만 받아 변경합니다.
+    """
+
     class Meta:
         model = Comment
         fields = ("content",)
@@ -33,6 +44,8 @@ class ArticleSerializer(serializers.ModelSerializer):
     Article을 상세조회하여 모든 정보를 조회할때 사용합니다.
 
     Attributes:
+        change_pic (str): 변경된 사진이미지의 경로를 나타냅니다.
+        input_pic (str): 원본 사진이미지의 경로를 나타냅니다.
         created_at (DateTime): 작성일의 형식을 바꿔 표현합니다.
         author (str): 작성자 username
         author (int): 작성자 id(pk)
@@ -49,9 +62,31 @@ class ArticleSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField()
 
     def get_change_pic(self, obj):
+        """get_change_pic 변경된 이미지 경로 가져오기
+
+        변경된 이미지의 경로를 가져옵니다.
+
+        Args:
+            obj (Article): ORM객체
+        Return:
+            (str): imageFieldFile의 /media부터의 경로를 반환합니다.
+        Raises:
+            없음
+        """
         return "/media/" + str(obj.pictures.change_pic)
 
     def get_input_pic(self, obj):
+        """get_input_pic 원본 이미지 경로 가져오기
+
+        원본 이미지의 경로를 가져옵니다.
+
+        Args:
+            obj (Article): ORM객체
+        Return:
+            (str): imageFieldFile의 /media부터의 경로를 반환합니다.
+        Raises:
+            없음
+        """
         return "/media/" + str(obj.pictures.input_pic)
 
     def get_comment_count(self, obj):
@@ -157,7 +192,7 @@ class ArticleEditSerializer(serializers.ModelSerializer):
 class ArticleCreateSerializer(serializers.ModelSerializer):
     """ArticleCreateSerializer Article 최초 작성시 사용
 
-    게시글을 작성할 때 사용합니다, title, description, origin_image, image, cat_says 값이 필요합니다.
+    게시글을 작성할 때 사용합니다, title, description, pictures(Picture의 id), cat_says 값이 필요합니다.
     """
 
     class Meta:

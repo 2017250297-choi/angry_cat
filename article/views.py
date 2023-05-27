@@ -184,6 +184,7 @@ class ArticleDetailView(APIView):
         """ArticleDetailView.delete
 
         delete요청 시 제시한 article_id의 게시글을 삭제합니다.
+        게시글과 연결된 Picture모델도 삭제합니다.
 
         Args:
             article_id (int): 게시글의 id를 지정한다.
