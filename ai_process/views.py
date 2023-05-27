@@ -3,7 +3,7 @@ from rest_framework.decorators import APIView
 from rest_framework.response import Response
 import openai
 import os
-from ai_process.serializers import PictureSerializer
+from ai_process.serializers import PictureSerializer, PictureCreateSerializer
 from ai_process.cat import picture_generator
 from .models import Picture
 
@@ -59,9 +59,9 @@ class PicgenView(APIView):
         post요청 시 입력받은 사진으로 변환된 사진을 생성하여 반환합니다.
         """
         Picture.objects.filter(article=None, author=request.user).delete()
-        serializer = PictureSerializer(data=request.data)
+        serializer = PictureCreateSerializer(data=request.data)
         if serializer.is_valid():
-            orm = serializer.save()
+            orm = serializer.save(author=request.user)
             change_pic = picture_generator("media/" + orm.__dict__["input_pic"])
             orm.change_pic = change_pic.replace("media/", "")
             orm.save()
