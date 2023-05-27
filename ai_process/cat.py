@@ -102,16 +102,8 @@ def select_target(target, a, b, c, d, x1, x2, y1, y2, center_x, center_y):
 
 
 def picture_generator(input_pic_url):
-    # file_bytes = np.asarray(bytearray(input_pic_url.file.read()), dtype=np.uint8)
-    # print(type(file_bytes))
-    # img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-    # print(type(img))
-
-    # input = input_pic_url
     detector = dlib.get_frontal_face_detector()
     img = cv2.imread(input_pic_url[1:])
-    print("여기", type(img))
-    print("저기", img)
     dets = detector(img)
     # 얼굴이 1개 이상 감지된 경우에만 스티커 적용
     if len(dets) >= 1:
@@ -148,7 +140,6 @@ def picture_generator(input_pic_url):
             alpha = sticker_resized[:, :, 3] / 255.0
             alpha = np.expand_dims(alpha, axis=2)
             overlay_rgb = sticker_resized[:, :, :3]
-            print("점검", target)
             try:
                 img[
                     min(pt1[1], pt2[1]) : max(pt1[1], pt2[1]),
@@ -174,11 +165,5 @@ def picture_generator(input_pic_url):
     else:
         print("얼굴이 탐지되지 않았다.")
     # 출력
-    print("삼번", img)
-    print("사번", type(img))
-    # cv2.imshow("result", img)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-    print(input_pic_url.replace("input", "change"))
     cv2.imwrite(input_pic_url[1:].replace("input", "change"), img)
     return input_pic_url.replace("input", "change")
