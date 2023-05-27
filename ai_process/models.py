@@ -11,5 +11,10 @@ class Picture(models.Model):
         change_pic (Image): AI가 변환한 사진
     """
 
-    input_pic = models.ImageField(upload_to="temp/%Y/%m/input/")
-    change_pic = models.ImageField(upload_to="temp/%Y/%m/change/", null=True)
+    input_pic = models.ImageField(upload_to="%Y/%m/input/")
+    change_pic = models.ImageField(upload_to="%Y/%m/change/", null=True)
+
+    def delete(self):
+        self.change_pic.delete(save=False)
+        self.input_pic.delete(save=False)
+        super(Picture, self).delete()
