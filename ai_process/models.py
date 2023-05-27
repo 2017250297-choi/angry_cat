@@ -1,4 +1,5 @@
 from django.db import models
+from user.models import User
 
 
 class Picture(models.Model):
@@ -13,6 +14,9 @@ class Picture(models.Model):
 
     input_pic = models.ImageField(upload_to="%Y/%m/input/")
     change_pic = models.ImageField(upload_to="%Y/%m/change/", null=True)
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="picture_set"
+    )
 
     def delete(self):
         """Picture.delete Picture모델 및 하위 이미지 삭제
