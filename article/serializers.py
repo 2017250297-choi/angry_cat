@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from article.models import Article, Comment
+from ai_process.models import Picture
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -39,11 +40,19 @@ class ArticleSerializer(serializers.ModelSerializer):
         comment_count (int): 댓글 수
     """
 
+    change_pic = serializers.SerializerMethodField()
+    input_pic = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(format="%m월%d일 %H:%M", read_only=True)
     author = serializers.SerializerMethodField()
     author_id = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     comment_count = serializers.SerializerMethodField()
+
+    def get_change_pic(self, obj):
+        return "/media/" + str(obj.pictures.change_pic)
+
+    def get_input_pic(self, obj):
+        return "/media/" + str(obj.pictures.input_pic)
 
     def get_comment_count(self, obj):
         """get_comment_count 댓글 갯수세기
@@ -126,7 +135,7 @@ class ArticleListSerializer(ArticleSerializer):
             "likes_count",
             "comment_count",
             "created_at",
-            "image",
+            "change_pic",
         )
 
 
@@ -156,7 +165,6 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
         fields = (
             "title",
             "description",
-            "origin_image",
-            "image",
+            "pictures",
             "cat_says",
         )
