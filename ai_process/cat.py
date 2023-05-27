@@ -6,7 +6,6 @@ import os
 
 h, w = 0, 0
 
-
 # a, d 에서 사용
 def width_control(pt1, pt2, control_y):
     if abs(pt2[0] - pt1[0]) < w * 0.4:
@@ -24,14 +23,14 @@ def width_control(pt1, pt2, control_y):
 
 
 # b, c에서 사용
-def height_control(pt1, pt2, center_x):
+def height_control(pt1, pt2, control_x):
     if abs(pt2[1] - pt1[1]) < h * 0.4:
         height_increase = int(abs(pt2[1] - pt1[1]) * 0.2)
         down_height_increase = pt1[1]
         up_height_increase = pt2[1]
         down_height_increase -= height_increase
         up_height_increase += height_increase
-        half_x = center_x
+        half_x = control_x
         pt1 = [pt1[0], down_height_increase]
         pt2 = [half_x, up_height_increase]
         return pt1, pt2
@@ -39,7 +38,7 @@ def height_control(pt1, pt2, center_x):
         return pt1, pt2
 
 
-def random_contorl(random_images):
+def random_control(random_images):
     random_image = random.choice(random_images)
     sticker_img_path = random_image["img"]
     return sticker_img_path
@@ -52,7 +51,7 @@ def select_target(target, a, b, c, d, x1, x2, y1, y2, center_x, center_y):
             {"num": 0, "img": "static/imgs/up_cat.png"},
             {"num": 1, "img": "static/imgs/top_cat1.png"},
         ]
-        sticker_img_path = random_contorl(random_images)
+        sticker_img_path = random_control(random_images)
         # 스티커 이미지 로드
         sticker_img = cv2.imread(sticker_img_path, cv2.IMREAD_UNCHANGED)
         control_y = a // 2
@@ -65,20 +64,20 @@ def select_target(target, a, b, c, d, x1, x2, y1, y2, center_x, center_y):
             {"num": 0, "img": "static/imgs/left_cat1.png"},
             {"num": 1, "img": "static/imgs/left_cat2.png"},
         ]
-        sticker_img_path = random_contorl(random_images)
+        sticker_img_path = random_control(random_images)
         # 스티커 이미지 로드
         sticker_img = cv2.imread(sticker_img_path, cv2.IMREAD_UNCHANGED)
-        center_x = b // 2
+        control_x = b // 2
         pt1 = x1, y1
         pt2 = 0, y2
-        pt1, pt2 = height_control(pt1, pt2, center_x)
+        pt1, pt2 = height_control(pt1, pt2, control_x)
     elif target == c:
         # 랜덤 이미지 딕셔너리
         random_images = [
             {"num": 0, "img": "static/imgs/right_cat.png"},
             {"num": 1, "img": "static/imgs/right_cat1.png"},
         ]
-        sticker_img_path = random_contorl(random_images)
+        sticker_img_path = random_control(random_images)
         # 스티커 이미지 로드
         sticker_img = cv2.imread(sticker_img_path, cv2.IMREAD_UNCHANGED)
         control_x = center_x + c // 2
@@ -92,7 +91,7 @@ def select_target(target, a, b, c, d, x1, x2, y1, y2, center_x, center_y):
             {"num": 1, "img": "static/imgs/under_cat1.png"},
             {"num": 2, "img": "static/imgs/under_cat2.png"},
         ]
-        sticker_img_path = random_contorl(random_images)
+        sticker_img_path = random_control(random_images)
         # 스티커 이미지 로드
         sticker_img = cv2.imread(sticker_img_path, cv2.IMREAD_UNCHANGED)
         control_y = center_y + d // 2
@@ -103,6 +102,7 @@ def select_target(target, a, b, c, d, x1, x2, y1, y2, center_x, center_y):
 
 
 def picture_generator(input_pic_url):
+    global h, w
     detector = dlib.get_frontal_face_detector()
     img = cv2.imread(input_pic_url)
     dets = detector(img)
@@ -117,7 +117,7 @@ def picture_generator(input_pic_url):
         y2 = det.bottom()
         h, w, c = img.shape
         center_x = (x2 + x1) // 2
-        center_y = (y2 + y1) // 2
+        center_y = (y2 + y1) // 2       
         a = center_y
         b = center_x
         c = w - b
@@ -130,7 +130,6 @@ def picture_generator(input_pic_url):
             pt1, pt2, sticker_img, target = select_target(
                 target, a, b, c, d, x1, x2, y1, y2, center_x, center_y
             )
-            cv2.rectangle(img, pt1=pt1, pt2=pt2, color=(255, 0, 0), thickness=2)
             # 스티커 이미지 크기 변경
             sticker_width = int(abs(pt2[0] - pt1[0]))
             sticker_height = int(abs(pt2[1] - pt1[1]))
@@ -162,7 +161,6 @@ def picture_generator(input_pic_url):
                 # )
                 continue
             break
-        cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 2)
     else:
         print("얼굴이 탐지되지 않았다.")
     # 출력
