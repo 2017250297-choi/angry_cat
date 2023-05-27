@@ -60,8 +60,8 @@ class PicgenView(APIView):
         serializer = PictureSerializer(data=request.data)
         if serializer.is_valid():
             orm = serializer.save()
-            change_pic = picture_generator("/media/" + orm.__dict__["input_pic"])
-            orm.change_pic = change_pic.replace("/media/", "")
+            change_pic = picture_generator("media/" + orm.__dict__["input_pic"])
+            orm.change_pic = change_pic.replace("media/", "")
             orm.save()
             new_serializer = PictureSerializer(instance=orm)
             return Response(new_serializer.data, status=status.HTTP_201_CREATED)
