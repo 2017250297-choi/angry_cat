@@ -2,8 +2,9 @@ import cv2
 import dlib
 import numpy as np
 import random
-h = 0
-w = 0
+import os
+
+h, w = 0, 0
 
 # a, d 에서 사용
 def width_control(pt1, pt2, control_y):
@@ -103,7 +104,7 @@ def select_target(target, a, b, c, d, x1, x2, y1, y2, center_x, center_y):
 def picture_generator(input_pic_url):
     global h, w
     detector = dlib.get_frontal_face_detector()
-    img = cv2.imread(input_pic_url[1:])
+    img = cv2.imread(input_pic_url)
     dets = detector(img)
     # 얼굴이 1개 이상 감지된 경우에만 스티커 적용
     if len(dets) >= 1:
@@ -163,5 +164,9 @@ def picture_generator(input_pic_url):
     else:
         print("얼굴이 탐지되지 않았다.")
     # 출력
-    cv2.imwrite(input_pic_url[1:].replace("input", "change"), img)
-    return input_pic_url.replace("input", "change")
+    save_uri = input_pic_url.replace("input", "change")
+    save_dir = "/".join(save_uri.split("/")[:-1])
+    if not os.path.exists(save_dir):
+        os.mkdir(save_dir)
+    cv2.imwrite(save_uri, img)
+    return save_uri

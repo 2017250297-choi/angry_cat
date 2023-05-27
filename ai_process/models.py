@@ -1,4 +1,5 @@
 from django.db import models
+from user.models import User
 
 
 class Picture(models.Model):
@@ -11,5 +12,17 @@ class Picture(models.Model):
         change_pic (Image): AI가 변환한 사진
     """
 
-    input_pic = models.ImageField(upload_to="temp/%Y/%m/input/")
-    change_pic = models.ImageField(upload_to="temp/%Y/%m/change/", null=True)
+    input_pic = models.ImageField(upload_to="%Y/%m/input/")
+    change_pic = models.ImageField(upload_to="%Y/%m/change/", null=True)
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="picture_set"
+    )
+
+    def delete(self):
+        """Picture.delete Picture모델 및 하위 이미지 삭제
+
+        Picture모델이 삭제될 때, 이미지필드의 경로에 해당하는 이미지들도 media 폴더에서 삭제됩니다.
+        """
+        self.change_pic.delete(save=False)
+        self.input_pic.delete(save=False)
+        super(Picture, self).delete()
