@@ -114,7 +114,7 @@ class ArticleView(generics.ListCreateAPIView):
     def post(self, request, *args, **kwargs):
         """ArticleView.post
 
-        request body로 title,description,image,origin_image,cat_says를 받습니다.
+        request body로 title,description,pictures(Picture모델 객체의 id),cat_says를 받습니다.
         serializer를 통해 검증된 정보를 만들어 Article을 저장합니다.
 
         정상 시 201 / "작성완료" 메세지를 반환합니다.
@@ -184,6 +184,7 @@ class ArticleDetailView(APIView):
         """ArticleDetailView.delete
 
         delete요청 시 제시한 article_id의 게시글을 삭제합니다.
+        게시글과 연결된 Picture모델도 삭제합니다.
 
         Args:
             article_id (int): 게시글의 id를 지정한다.
@@ -194,6 +195,7 @@ class ArticleDetailView(APIView):
         """
         article = get_object_or_404(Article, id=article_id)
         self.check_object_permissions(self.request, article)
+        article.pictures.delete()
         article.delete()
         return Response({"message": "삭제완료"}, status=status.HTTP_204_NO_CONTENT)
 
