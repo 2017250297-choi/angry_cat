@@ -29,17 +29,19 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 openai.api_key = os.environ.get("API_KEY")
 
 # 구글연동 로그인을 위한 CALLBACK_URI와 CLIENT_ID 설정입니다.
-FRONT_BASEURI = "http://127.0.0.1:5500/"
-GOOGLE_CALLBACK_URI = FRONT_BASEURI + "index.html"
+FRONT_BASEURI = "https://barryjung.com"
+GOOGLE_CALLBACK_URI = FRONT_BASEURI + "/index.html"
 CLIENT_ID = os.environ.get("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
+    "backend.barryjung.com",
+    # PublicIp(dynamic)
 ]
 
 
@@ -68,7 +70,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
 }
-CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:5500"]  # live server
+CORS_ALLOWED_ORIGINS = [FRONT_BASEURI]  # live server
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -159,7 +161,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "user.User"
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=2),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
