@@ -14,9 +14,11 @@ This project is Toy Project for DRF and ML mudule application. Please enjoy!
 
 이 프로젝트는 DRF와 머신러닝 모듈의 활용을 위한 토이 프로젝트입니다.
 
-## SA of this Project
+## Realated Links
 
-[링크-SA](https://www.notion.so/SA-88793d5b1de84fa88bdf42ab530a5b83)
+- **SA:** [https://www.notion.so/SA-88793d5b1de84fa88bdf42ab530a5b83](https://www.notion.so/SA-88793d5b1de84fa88bdf42ab530a5b83)
+- **Front_end Repo:** [https://github.com/barryjung/angry_cat_frontend](https://github.com/barryjung/angry_cat_frontend)
+- **Deployed Service:** [https://barryjung.com/](https://barryjung.com/)
 
 ## 변경점1(23.05.23)
 
