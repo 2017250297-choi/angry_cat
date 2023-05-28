@@ -120,7 +120,7 @@ class GoogleURLView(APIView):
         """
         return Response(
             {
-                "client_id": settings.client_id,
+                "client_id": settings.CLIENT_ID,
                 "redirect_uri": settings.GOOGLE_CALLBACK_URI,
             },
             status=status.HTTP_200_OK,

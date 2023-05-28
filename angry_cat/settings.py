@@ -31,7 +31,7 @@ openai.api_key = os.environ.get("API_KEY")
 # 구글연동 로그인을 위한 CALLBACK_URI와 CLIENT_ID 설정입니다.
 FRONT_BASEURI = "http://127.0.0.1:5500/"
 GOOGLE_CALLBACK_URI = FRONT_BASEURI + "index.html"
-client_id = os.environ.get("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
+CLIENT_ID = os.environ.get("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
