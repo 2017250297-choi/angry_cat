@@ -189,7 +189,6 @@ class ArticleEditSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, attrs):
-        print(self.instance)
         D = self.instance.description
         D_ = attrs.get("description")
         C = self.instance.cat_says
