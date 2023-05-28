@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from datetime import timedelta
+import openai
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,6 +24,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
+
+# Chatgpt 연결을 위한 openai api_key 설정입니다.
+openai.api_key = os.environ.get("API_KEY")
+
+# 구글연동 로그인을 위한 CALLBACK_URI와 CLIENT_ID 설정입니다.
+FRONT_BASEURI = "http://127.0.0.1:5500/"
+GOOGLE_CALLBACK_URI = FRONT_BASEURI + "index.html"
+client_id = os.environ.get("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
+
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

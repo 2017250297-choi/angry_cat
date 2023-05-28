@@ -10,13 +10,9 @@ from user.serializers import (
 from user.permissions import IsAuthenticatedOrReadOrSignUp
 from rest_framework.generics import get_object_or_404
 from user.models import User
-from django.shortcuts import redirect
-import os
+from django.conf import settings
 import requests
 from rest_framework_simplejwt.tokens import RefreshToken
-
-FRONT_BASEURI = "http://127.0.0.1:5500/"
-GOOGLE_CALLBACK_URI = FRONT_BASEURI + "index.html"
 
 
 class UserSignView(APIView):
@@ -122,9 +118,11 @@ class GoogleURLView(APIView):
         어떤 url로 access_token을 보낼지 결정합니다.
 
         """
-        client_id = os.environ.get("SOCIAL_AUTH_GOOGLE_CLIENT_ID")
         return Response(
-            {"client_id": client_id, "redirect_uri": GOOGLE_CALLBACK_URI},
+            {
+                "client_id": settings.client_id,
+                "redirect_uri": settings.GOOGLE_CALLBACK_URI,
+            },
             status=status.HTTP_200_OK,
         )
 

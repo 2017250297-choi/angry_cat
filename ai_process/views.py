@@ -7,8 +7,6 @@ from ai_process.serializers import PictureSerializer
 from ai_process.cat import picture_generator
 from .models import Picture
 
-openai.api_key = os.environ.get("api_key")
-
 
 class MentgenView(APIView):
     """MentgenView
