@@ -3,6 +3,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APITestCase
 from user.models import User
 from article.models import Article, Comment
+from ai_process.models import Picture
 
 
 """article 테스트 요약
@@ -24,6 +25,9 @@ from article.models import Article, Comment
 12. 댓글 생성
 13. 댓글 수정
 14. 댓글 삭제
+
+15. 멘트생성
+16. 이미지생성
 """
 
 
@@ -42,22 +46,11 @@ class ArticleBaseTestCase(APITestCase):
         )
         cls.user_login_data = {"username": "testuser1", "password": "qhdks111!"}
 
-        cls.article = Article.objects.create(author=cls.user)
-        image_file = SimpleUploadedFile(
-            "test_image.jpg",
-            open("static/test_image.jpg", "rb").read(),
-            content_type="image/jpeg",
-        )
-        image_file2 = SimpleUploadedFile(
-            "test_image.jpg",
-            open("static/test_image.jpg", "rb").read(),
-            content_type="image/jpeg",
-        )
+        cls.picture = Picture.objects.create(author=cls.user)
+        cls.article = Article.objects.create(author=cls.user, pictures=cls.picture)
         cls.article_create_data = {
             "title": "test",
             "description": "test",
-            "image": image_file,
-            "origin_image": image_file2,
             "cat_says": "test",
         }
         cls.article_edit_data = {
@@ -70,10 +63,30 @@ class ArticleBaseTestCase(APITestCase):
         cls.comment_create_data = {"content": "test"}
         cls.comment_edit_data = {"content": "edit"}
 
+        image_file = SimpleUploadedFile(
+            "test_image.jpg",
+            open("static/test_image.jpg", "rb").read(),
+            content_type="image/jpeg",
+        )
+        image_file2 = SimpleUploadedFile(
+            "test_image.jpg",
+            open("static/test_image.jpg", "rb").read(),
+            content_type="image/jpeg",
+        )
+        cls.pic_gen_test_data = {"input_pic": image_file}
+        cls.pic_gen_setup_data = {"input_pic": image_file2}
+
     def setUp(self) -> None:
         login_user = self.client.post(reverse("token"), self.user_login_data).data
         self.access = login_user["access"]
         self.refresh = login_user["refresh"]
+
+        pic_gen_setup = self.client.post(
+            path=reverse("pic_gen"),
+            HTTP_AUTHORIZATION=f"Bearer {self.access}",
+            data=self.pic_gen_setup_data,
+        ).data
+        self.pic_gen_setup_id = pic_gen_setup["id"]
 
 
 class ArticleGetTestCase(ArticleBaseTestCase):
@@ -136,10 +149,12 @@ class ArticleGetTestCase(ArticleBaseTestCase):
         게시글 작성 테스트입니다.
         """
         url = reverse("article")
+        data = self.article_create_data
+        data["pictures"] = self.pic_gen_setup_id
         response = self.client.post(
             path=url,
             HTTP_AUTHORIZATION=f"Bearer {self.access}",
-            data=self.article_create_data,
+            data=data,
         )
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data, {"message": "작성완료"})
@@ -291,3 +306,38 @@ class CommentTestCase(ArticleBaseTestCase):
         )
         self.assertEqual(response.status_code, 204)
         self.assertEqual(response.data, {"message": "삭제완료"})
+
+
+class AiProcessTestCase(ArticleBaseTestCase):
+    """AI 처리 테스트
+
+    멘트 생성, 이미지 생성을 테스트합니다.
+    """
+
+    def test_mentgen(self):
+        """멘트 생성
+
+        멘트 생성 테스트입니다.
+        """
+        url = reverse("ment_gen")
+        data = {"description": "테스트"}
+        response = self.client.post(
+            path=url,
+            HTTP_AUTHORIZATION=f"Bearer {self.access}",
+            data=data,
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_picgen(self):
+        """이미지 생성
+
+        이미지 생성 테스트입니다.
+        """
+        url = reverse("pic_gen")
+        data = self.pic_gen_test_data
+        response = self.client.post(
+            path=url,
+            HTTP_AUTHORIZATION=f"Bearer {self.access}",
+            data=data,
+        )
+        self.assertEqual(response.status_code, 201)
