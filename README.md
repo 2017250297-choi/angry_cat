@@ -2,7 +2,7 @@
 
 # Project ANGRY CAT
 
-![소개 이미지]()
+![소개 이미지](https://github.com/2017250297-choi/angry_cat/blob/master/introduction.png?raw=true)
 
 ## 소개 Introduction
 
