@@ -37,7 +37,7 @@ class MentgenView(APIView):
                     "role": "system",
                     "content": "입력값에 주어진 상황(참고로 이것은 사진의 내용과 연관이 있다옹!)을 지켜보던 고양이가 있다고 가정한다옹. 문장의 화자와 너(고양이)는 다른 객체임을 명확히 인지하라냥! 그 고양이가 화난 이유를 한문장으로 만들어라냥. 웃기고 고양이다운 이유여야한다옹! 부적절한 문장이거나 이해할 수 없다면, 고양이답게 화내고 공격하겠다고 협박해라냥!!",
                 },
-                {"role": "user", "content": request.POST.get("description", "")},
+                {"role": "user", "content": request.data.get("description", "")},
             ],
         )
         message = result.choices[0].message.content
