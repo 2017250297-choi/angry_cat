@@ -188,6 +188,17 @@ class ArticleEditSerializer(serializers.ModelSerializer):
             "cat_says",
         )
 
+    def validate(self, attrs):
+        D = self.instance.description
+        D_ = attrs.get("description")
+        C = self.instance.cat_says
+        C_ = attrs.get("cat_says")
+        if D != D_ and C == C_:
+            raise serializers.ValidationError(
+                {"cat_says": "새로운 description엔 새로운 cat_says가 필요합니다."}
+            )
+        return super().validate(attrs)
+
 
 class ArticleCreateSerializer(serializers.ModelSerializer):
     """ArticleCreateSerializer Article 최초 작성시 사용
